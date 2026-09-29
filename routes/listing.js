@@ -15,15 +15,27 @@ router.route("/")
         isLoggedIn,
 
         (req, res, next) => {
-            console.log("POST /listings REACHED");
+            console.log("1. POST /listings REACHED");
             next();
         },
 
         upload.single("listing[image][url]"),
+
+        (req, res, next) => {
+            console.log("2. IMAGE UPLOAD COMPLETED");
+            console.log("FILE:", req.file);
+            next();
+        },
+
         validateListing,
+
+        (req, res, next) => {
+            console.log("3. VALIDATION COMPLETED");
+            next();
+        },
+
         wrapAsync(listingController.createlisting)
     );
-
 // router.route("/")
 //     .get( wrapAsync(listingController.index))
 //     .post( 
