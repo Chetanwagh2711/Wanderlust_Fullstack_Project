@@ -3,6 +3,7 @@ const { listingSchema } = require("../schema.js");
 const mbxGeocoding=require('@mapbox/mapbox-sdk/services/geocoding');
 const mapToken=process.env.MAP_TOKEN;
 const geocodingClient=mbxGeocoding({accessToken:mapToken});
+const ExpressError = require("../utils/ExpressError.js");
 
 
 module.exports.index=async(req, res)=>{
@@ -17,6 +18,10 @@ module.exports.renderNewForm=async(req, res) =>{
 module.exports.createlisting = async (req, res, next) => {
     console.log("CREATE LISTING CONTROLLER REACHED");
 
+    if (!req.body.listing) {
+        throw new ExpressError(400, "Send Valid Data For Listing");
+    }
+
     let response = await geocodingClient
         .forwardGeocode({
             query: req.body.listing.location,
@@ -27,40 +32,42 @@ module.exports.createlisting = async (req, res, next) => {
     console.log("MAPBOX RESPONSE RECEIVED");
     console.log(response.body.features);
 
+    let result = listingSchema.validate(req.body);
+    console.log(result);
+
+    if (result.error) {
+        throw new ExpressError(400, result.error);
+    }
+
+    if (!req.file) {
+        throw new ExpressError(400, "Please upload an image");
+    }
+
     let url = req.file.path;
     let filename = req.file.filename;
 
-    // rest of your code...
-};
-
-    let result=listingSchema.validate(req.body);
-    console.log(result);
-    if(result.error){
-        throw new ExpressError(400,result.error);
+    if (!response.body.features.length) {
+        throw new ExpressError(400, "Location could not be found");
     }
-
-        if (!req.body.listing.image || !req.body.listing.image.url) {
-        req.body.listing.image = {
-            filename: "listingimage",
-            url: "https://wallpaperaccess.com/full/4184546.jpg"
-        };
-    }
-
-    if(!req.body.listing){
-        throw new ExpressError(300,"Send Valid Data For Listing");
-    }
-
 
     const newListing = new Listing(req.body.listing);
-    newListing.owner=req.user._id;
-    newListing.image={url,filename};
-    newListing.geometry=response.body.features[0].geometry;
 
-    let savedListing=await newListing.save();
-    console.log(savedListing)
-    req.flash("sucess","New Listing Created");
+    newListing.owner = req.user._id;
+
+    newListing.image = {
+        url: url,
+        filename: filename
+    };
+
+    newListing.geometry = response.body.features[0].geometry;
+
+    let savedListing = await newListing.save();
+
+    console.log(savedListing);
+
+    req.flash("sucess", "New Listing Created");
+
     res.redirect("/listings");
-
 };
 
 module.exports.showListing=async(req, res) =>{
