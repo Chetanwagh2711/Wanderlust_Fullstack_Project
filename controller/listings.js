@@ -15,7 +15,8 @@ module.exports.renderNewForm=async(req, res) =>{
 };
 
 module.exports.createlisting=async(req, res, next) => {
-      let response =await geocodingClient.
+    console.log("CREATE LISTING ROUTE HIT");  
+    let response =await geocodingClient.
       forwardGeocode({
         query:req.body.listing.location,
         limit:1,

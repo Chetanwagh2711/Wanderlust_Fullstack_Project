@@ -9,15 +9,29 @@ const {storage}=require("../cloudConfig.js");
 const upload=multer({storage})
 
 
-
 router.route("/")
-    .get( wrapAsync(listingController.index))
-    .post( 
-        isLoggedIn, 
-        
+    .get(wrapAsync(listingController.index))
+    .post(
+        isLoggedIn,
+
+        (req, res, next) => {
+            console.log("POST /listings REACHED");
+            next();
+        },
+
         upload.single("listing[image][url]"),
-        validateListing, 
-    wrapAsync(listingController.createlisting));
+        validateListing,
+        wrapAsync(listingController.createlisting)
+    );
+
+// router.route("/")
+//     .get( wrapAsync(listingController.index))
+//     .post( 
+//         isLoggedIn, 
+        
+//         upload.single("listing[image][url]"),
+//         validateListing, 
+//     wrapAsync(listingController.createlisting));
     
 // new route
 router.get("/new" ,isLoggedIn , wrapAsync(listingController.renderNewForm));
