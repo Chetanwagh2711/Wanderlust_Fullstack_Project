@@ -14,18 +14,24 @@ module.exports.renderNewForm=async(req, res) =>{
     res.render("./listings/new.ejs")
 };
 
-module.exports.createlisting=async(req, res, next) => {
-    console.log("CREATE LISTING ROUTE HIT");  
-    let response =await geocodingClient.
-      forwardGeocode({
-        query:req.body.listing.location,
-        limit:1,
-      }).send();
+module.exports.createlisting = async (req, res, next) => {
+    console.log("CREATE LISTING CONTROLLER REACHED");
 
-    
-    
-    let url=req.file.path;
-       let filename=req.file.filename;
+    let response = await geocodingClient
+        .forwardGeocode({
+            query: req.body.listing.location,
+            limit: 1,
+        })
+        .send();
+
+    console.log("MAPBOX RESPONSE RECEIVED");
+    console.log(response.body.features);
+
+    let url = req.file.path;
+    let filename = req.file.filename;
+
+    // rest of your code...
+};
 
     let result=listingSchema.validate(req.body);
     console.log(result);
